@@ -1,10 +1,7 @@
-// import { parseOBJ } from "./parser.js";
+"use strict";
 
-export async function fetchOBJ(path) {
-  return fetch(path)
-    .then((resp) => resp.text())
-    .then((text) => parseOBJ(text));
-}
+// This is not a full .obj parser.
+// see http://paulbourke.net/dataformats/obj/
 
 function parseOBJ(text) {
   // because indices are base 1 let's just fill in the 0th data
@@ -234,8 +231,8 @@ function parseMTL(text) {
   return materials;
 }
 
-export async function getObjInfo(objString, gl, programInfo) {
-  const objHref = objString;
+export async function retrieveOBJ(path, gl, programInfo) {
+  const objHref = path;
   const response = await fetch(objHref);
   const text = await response.text();
   const obj = parseOBJ(text);
@@ -276,7 +273,8 @@ export async function getObjInfo(objString, gl, programInfo) {
     shininess: 400,
     opacity: 1,
   };
-  const objInfo = obj.geometries.map(({ material, data }) => {
+
+  const parts = obj.geometries.map(({ material, data }) => {
     // Because data is just named arrays like this
     //
     // {
@@ -313,5 +311,6 @@ export async function getObjInfo(objString, gl, programInfo) {
       vao,
     };
   });
-  return objInfo;
+
+  return parts;
 }
