@@ -101,7 +101,13 @@ async function main() {
 
   // -------------- objects retreive ----------------
   const baseObjects = {
-    road: await retrieveOBJ("obj2/road_straight.obj", gl, programInfo),
+    roads: {
+      straight: await retrieveOBJ("obj2/road_straight.obj", gl, programInfo),
+      corner: await retrieveOBJ("obj2/road_corner.obj", gl, programInfo),
+      tsplit: await retrieveOBJ("obj2/road_tsplit.obj", gl, programInfo),
+      juction: await retrieveOBJ("obj2/road_junction.obj", gl, programInfo),
+    },
+    // road: await retrieveOBJ("obj2/road_straight.obj", gl, programInfo),
     buildings: {
       withBase: [
         await retrieveOBJ("obj2/building_A.obj", gl, programInfo),
@@ -133,27 +139,160 @@ async function main() {
 
     for (let i = 0; i < world.length; i++) {
       for (let j = 0; j < world[i].length; j++) {
-        // put roaad
         if (world[i][j] == 0) {
-          new_objects.push({
-            obj: baseObjects.road,
-            position: [i * 2, 0, j * 2],
-            rotation: degToRad(0),
-          });
+          // put roads
+          if (
+            world[i + 1] &&
+            world[i - 1] &&
+            world[i + 1][j] == 0 &&
+            world[i - 1][j] == 0 &&
+            world[i][j + 1] == 0 &&
+            world[i][j - 1] == 0
+          ) {
+            // junction
+            new_objects.push({
+              obj: baseObjects.roads.juction,
+              position: [i * 2, 0, j * 2],
+              rotation: degToRad(0),
+            });
+          } else if (
+            // tsplit up
+            world[i + 1] &&
+            world[i + 1][j] == 0 &&
+            world[i][j - 1] == 0 &&
+            world[i][j + 1] == 0
+          ) {
+            new_objects.push({
+              obj: baseObjects.roads.tsplit,
+              position: [i * 2, 0, j * 2],
+              rotation: degToRad(0),
+            });
+          } else if (
+            // tsplit left
+            world[i + 1] &&
+            world[i - 1] &&
+            world[i + 1][j] == 0 &&
+            world[i][j - 1] == 0 &&
+            world[i - 1][j] == 0
+          ) {
+            new_objects.push({
+              obj: baseObjects.roads.tsplit,
+              position: [i * 2, 0, j * 2],
+              rotation: degToRad(90),
+            });
+          } else if (
+            // tsplit down
+            world[i - 1] &&
+            world[i - 1][j] == 0 &&
+            world[i][j - 1] == 0 &&
+            world[i][j + 1] == 0
+          ) {
+            new_objects.push({
+              obj: baseObjects.roads.tsplit,
+              position: [i * 2, 0, j * 2],
+              rotation: degToRad(180),
+            });
+          } else if (
+            // tsplit right
+            world[i - 1] &&
+            world[i + 1] &&
+            world[i - 1][j] == 0 &&
+            world[i + 1][j] == 0 &&
+            world[i][j + 1] == 0
+          ) {
+            new_objects.push({
+              obj: baseObjects.roads.tsplit,
+              position: [i * 2, 0, j * 2],
+              rotation: degToRad(180),
+            });
+          } else if (
+            // straight vertical
+            world[i + 1] &&
+            world[i - 1] &&
+            world[i + 1][j] == 0 &&
+            world[i - 1][j] == 0
+          ) {
+            new_objects.push({
+              obj: baseObjects.roads.straight,
+              position: [i * 2, 0, j * 2],
+              rotation: degToRad(90),
+            });
+          } else if (
+            world[i + 1] &&
+            world[i + 1][j] == 0 &&
+            world[i][j - 1] == 0
+          ) {
+            // corner up left
+            new_objects.push({
+              obj: baseObjects.roads.corner,
+              position: [i * 2, 0, j * 2],
+              rotation: degToRad(90),
+            });
+          } else if (
+            world[i + 1] &&
+            world[i + 1][j] == 0 &&
+            world[i][j + 1] == 0
+          ) {
+            // corner up right
+            new_objects.push({
+              obj: baseObjects.roads.corner,
+              position: [i * 2, 0, j * 2],
+              rotation: degToRad(270),
+            });
+          } else if (
+            world[i - 1] &&
+            world[i - 1][j] == 0 &&
+            world[i][j - 1] == 0
+          ) {
+            // corner down left
+            new_objects.push({
+              obj: baseObjects.roads.corner,
+              position: [i * 2, 0, j * 2],
+              rotation: degToRad(180),
+            });
+          } else if (
+            world[i - 1] &&
+            world[i - 1][j] == 0 &&
+            world[i][j + 1] == 0
+          ) {
+            // corner down right
+            new_objects.push({
+              obj: baseObjects.roads.corner,
+              position: [i * 2, 0, j * 2],
+              rotation: degToRad(0),
+            });
+          } else {
+            // straight horizontal
+            new_objects.push({
+              obj: baseObjects.roads.straight,
+              position: [i * 2, 0, j * 2],
+              rotation: degToRad(0),
+            });
+          }
         } else {
+          let rotation = degToRad(0);
+
+          if (world[i + 1] && world[i + 1][j] == 0) {
+            rotation = degToRad(90);
+          } else if (world[i][j + 1] == 0) {
+            rotation = degToRad(270);
+          } else if (world[i - 1] && world[i - 1][j] == 0) {
+            rotation = degToRad(180);
+          }
+
           // put building with base
           const type = Math.floor(Math.random() * 8);
 
           new_objects.push({
             obj: baseObjects.buildings.withBase[type],
             position: [i * 2, 0, j * 2],
-            rotation: degToRad(0),
+            rotation,
           });
           for (let k = 1; k < world[i][j]; k++) {
             new_objects.push({
               obj: baseObjects.buildings.withoutBase[type],
               position: [i * 2, k * 1.5, j * 2],
-              rotation: degToRad(0),
+              rotation,
             });
           }
         }
@@ -256,13 +395,13 @@ async function main() {
     updateObjects();
   });
 
-  document.querySelector('#maxHeight').addEventListener('change', (e) => {
-    parameters.maxHeight = parseInt(e.target.value)
-  })
+  document.querySelector("#maxHeight").addEventListener("change", (e) => {
+    parameters.maxHeight = parseInt(e.target.value);
+  });
 
-  document.querySelector("#blockSize").addEventListener('change', (e) => {
-    parameters.blockSize = parseInt(e.target.value)
-  })
+  document.querySelector("#blockSize").addEventListener("change", (e) => {
+    parameters.blockSize = parseInt(e.target.value);
+  });
 
   window.addEventListener("keydown", (e) => {
     const n = Number.parseInt(
