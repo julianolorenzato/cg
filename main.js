@@ -1,3 +1,4 @@
+import { randomCity } from "./random_city.js";
 import { retrieveOBJ } from "./retrieve.js";
 
 const vs = `#version 300 es
@@ -69,11 +70,7 @@ void main () {
 }
 `;
 
-const world = [
-  [0, 0, 0, 0, 0],
-  [1, 1, 1, 1, 1],
-  [0, 0, 0, 0, 0]
-]
+let world = randomCity(8, 12);
 
 async function main() {
   // Get A WebGL context
@@ -96,27 +93,75 @@ async function main() {
   const fieldOfViewInRadians = degToRad(60);
 
   // camera parameters (estavam dentro de drawScene)
-  var cameraPosition = [0, 10, 20];
-  const target = [0, 0, 0];
+  var cameraPosition = [20, 20, 15];
+  const target = [0, -10, 0];
   const up = [0, 1, 0];
 
   // -------------- objects retreive ----------------
   const baseObjects = {
     road: await retrieveOBJ("obj2/road_straight.obj", gl, programInfo),
-    building: await retrieveOBJ("obj2/building_A.obj", gl, programInfo),
+    buildings: {
+      withBase: [
+        await retrieveOBJ("obj2/building_A.obj", gl, programInfo),
+        await retrieveOBJ("obj2/building_B.obj", gl, programInfo),
+        await retrieveOBJ("obj2/building_C.obj", gl, programInfo),
+        await retrieveOBJ("obj2/building_D.obj", gl, programInfo),
+        await retrieveOBJ("obj2/building_E.obj", gl, programInfo),
+        await retrieveOBJ("obj2/building_F.obj", gl, programInfo),
+        await retrieveOBJ("obj2/building_G.obj", gl, programInfo),
+        await retrieveOBJ("obj2/building_H.obj", gl, programInfo),
+      ],
+      withoutBase: [
+        await retrieveOBJ("obj2/building_A_withoutBase.obj", gl, programInfo),
+        await retrieveOBJ("obj2/building_B_withoutBase.obj", gl, programInfo),
+        await retrieveOBJ("obj2/building_C_withoutBase.obj", gl, programInfo),
+        await retrieveOBJ("obj2/building_D_withoutBase.obj", gl, programInfo),
+        await retrieveOBJ("obj2/building_E_withoutBase.obj", gl, programInfo),
+        await retrieveOBJ("obj2/building_F_withoutBase.obj", gl, programInfo),
+        await retrieveOBJ("obj2/building_G_withoutBase.obj", gl, programInfo),
+        await retrieveOBJ("obj2/building_H_withoutBase.obj", gl, programInfo),
+      ],
+    },
   };
 
-  let objects = []
+  let objects = [];
 
-  for (let i = 0; i < world.length; i++) {
-    for (let j = 0; j < world[i].length; j++) {
-      if (world[i][j] == 1) {
-        objects.push({obj: baseObjects.road, position: [i * 2, 0, j * 2], rotation: degToRad(0)})
-      } else {
-        objects.push({obj: baseObjects.building, position: [i * 2, 0, j * 2], rotation: degToRad(90)})
+  function updateObjects() {
+    let new_objects = []
+
+    for (let i = 0; i < world.length; i++) {
+      for (let j = 0; j < world[i].length; j++) {
+        // put roaad
+        if (world[i][j] == 0) {
+          new_objects.push({
+            obj: baseObjects.road,
+            position: [i * 2, 0, j * 2],
+            rotation: degToRad(0),
+          });
+        } else {
+          // put building with base
+          const type = Math.floor(Math.random() * 8)
+
+          new_objects.push({
+            obj: baseObjects.buildings.withBase[type],
+            position: [i * 2, 0, j * 2],
+            rotation: degToRad(90),
+          });
+          for (let k = 0; k < 3; k++) {
+            new_objects.push({
+              obj: baseObjects.buildings.withoutBase[type],
+              position: [i * 2, k * 1.5, j * 2],
+              rotation: degToRad(0),
+            });
+          }
+        }
       }
     }
+
+    objects = new_objects
   }
+
+  updateObjects();
 
   // -------------- for each object --------------------
   let specificObjectUniforms = {
@@ -203,6 +248,18 @@ async function main() {
     "wheel",
     (e) => (cameraPosition[2] += e.deltaY * 0.01)
   );
+
+  window.addEventListener("keydown", (e) => {
+    // console.log(e.code)
+
+    const n = Number.parseInt(
+      e.code.replace("Numpad", "").replace("Digit", "")
+    );
+
+    world = randomCity(n, 12)
+
+    updateObjects()
+  });
 
   // --------------- utility functions---------------------
   function computeMatrix(
