@@ -1,7 +1,10 @@
-export function randomCity(buildBlockSize, citySize) {
+export function randomCity(buildBlockSize, maxBuildingHeight) {
   const perRow = Math.floor(buildBlockSize / 2);
 
-  const city = initializeCity(citySize)
+  // é uma constante por enquanto
+  const citySize = 12
+
+  const city = initializeCity(citySize, maxBuildingHeight)
 
   for (let i = 0; i < citySize; i += 3) {
     const rowStart = Math.round(Math.random() * perRow)
@@ -17,24 +20,18 @@ export function randomCity(buildBlockSize, citySize) {
     }
   }
 
+  console.log(city)
+
   return city
 }
 
-// function randomCordinate() {
-//   return {
-//     x: Math.round(Math.random() * 9),
-//     y: Math.round(Math.random() * 9),
-//   };
-// }
-
-
-function initializeCity(size, buildBlockMaxHeight) {
+function initializeCity(size, maxBuildingHeight) {
   const city = [];
 
   for (let i = 0; i < size; i++) {
     city.push([]);
     for (let j = 0; j < size; j++) {
-      city[i].push(Math.round(Math.random() * buildBlockMaxHeight));
+      city[i].push(Math.round(Math.random() * maxBuildingHeight));
     }
   }
 

@@ -70,7 +70,9 @@ void main () {
 }
 `;
 
-let world = randomCity(8, 12);
+const parameters = { maxHeight: 5, blockSize: 8 };
+
+let world = randomCity(parameters.blockSize, parameters.maxHeight);
 
 async function main() {
   // Get A WebGL context
@@ -127,7 +129,7 @@ async function main() {
   let objects = [];
 
   function updateObjects() {
-    let new_objects = []
+    let new_objects = [];
 
     for (let i = 0; i < world.length; i++) {
       for (let j = 0; j < world[i].length; j++) {
@@ -140,14 +142,14 @@ async function main() {
           });
         } else {
           // put building with base
-          const type = Math.floor(Math.random() * 8)
+          const type = Math.floor(Math.random() * 8);
 
           new_objects.push({
             obj: baseObjects.buildings.withBase[type],
             position: [i * 2, 0, j * 2],
-            rotation: degToRad(90),
+            rotation: degToRad(0),
           });
-          for (let k = 0; k < 3; k++) {
+          for (let k = 1; k < world[i][j]; k++) {
             new_objects.push({
               obj: baseObjects.buildings.withoutBase[type],
               position: [i * 2, k * 1.5, j * 2],
@@ -158,7 +160,7 @@ async function main() {
       }
     }
 
-    objects = new_objects
+    objects = new_objects;
   }
 
   updateObjects();
@@ -249,16 +251,28 @@ async function main() {
     (e) => (cameraPosition[2] += e.deltaY * 0.01)
   );
 
-  window.addEventListener("keydown", (e) => {
-    // console.log(e.code)
+  document.querySelector("#randomize").addEventListener("click", () => {
+    world = randomCity(parameters.blockSize, parameters.maxHeight);
+    updateObjects();
+  });
 
+  document.querySelector('#maxHeight').addEventListener('change', (e) => {
+    parameters.maxHeight = parseInt(e.target.value)
+  })
+
+  document.querySelector("#blockSize").addEventListener('change', (e) => {
+    parameters.blockSize = parseInt(e.target.value)
+  })
+
+  window.addEventListener("keydown", (e) => {
     const n = Number.parseInt(
       e.code.replace("Numpad", "").replace("Digit", "")
     );
 
-    world = randomCity(n, 12)
-
-    updateObjects()
+    if (n >= 4 && n <= 9) {
+      world = randomCity(n, n);
+      updateObjects();
+    }
   });
 
   // --------------- utility functions---------------------
