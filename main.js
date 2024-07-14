@@ -309,15 +309,11 @@ async function main() {
     u_matrix: m4.identity(),
   };
 
-  let waterYRotation = 0;
-  let waterXRotation = 0;
-
   requestAnimationFrame(drawScene);
 
   function drawScene(time) {
     time = time * 0.0005;
 
-    waterYRotation = time;
     twgl.resizeCanvasToDisplaySize(gl.canvas);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -358,7 +354,7 @@ async function main() {
       specificObjectUniforms.u_matrix = computeMatrix(
         viewProjectionMatrix,
         position,
-        waterXRotation,
+        0,
         rotation
       );
 
